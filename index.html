@@ -1,165 +1,105 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EduTrack Pro - Multi-Exam Cloud Tracker</title>
+    <title>EduTrack Pro | Multi-Exam Cloud Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap');
-        
-        :root {
-            --bg: #e0e5ec;
-            --shadow-dark: #a3b1c6;
-            --shadow-light: #ffffff;
-            --primary: #6d5dfc;
-        }
-
-        body { 
-            font-family: 'Quicksand', sans-serif; 
-            background-color: var(--bg);
-            color: #444;
-        }
-
-        .neu-flat {
-            background: var(--bg);
-            box-shadow: 9px 9px 16px var(--shadow-dark), -9px -9px 16px var(--shadow-light);
-        }
-
-        .neu-pressed {
-            background: var(--bg);
-            box-shadow: inset 6px 6px 12px var(--shadow-dark), inset -6px -6px 12px var(--shadow-light);
-        }
-
-        .neu-button {
-            background: var(--bg);
-            box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light);
-            transition: all 0.2s ease;
-            cursor: pointer;
-        }
-
-        .neu-button:active {
-            box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
-            transform: scale(0.98);
-        }
-
-        .neu-button.active {
-            box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
-            color: var(--primary);
-            font-weight: 700;
-        }
-
+        :root { --bg: #e0e5ec; --shadow-dark: #a3b1c6; --shadow-light: #ffffff; --primary: #6d5dfc; }
+        body { font-family: 'Quicksand', sans-serif; background-color: var(--bg); color: #444; }
+        .neu-flat { background: var(--bg); box-shadow: 8px 8px 15px var(--shadow-dark), -8px -8px 15px var(--shadow-light); }
+        .neu-pressed { background: var(--bg); box-shadow: inset 6px 6px 12px var(--shadow-dark), inset -6px -6px 12px var(--shadow-light); }
+        .neu-button { background: var(--bg); box-shadow: 5px 5px 10px var(--shadow-dark), -5px -5px 10px var(--shadow-light); transition: 0.2s; cursor: pointer; }
+        .neu-button:active { box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light); transform: scale(0.98); }
+        .neu-button.active { box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light); color: var(--primary); font-weight: 700; }
         .hidden-section { display: none; }
-        
-        #loading-overlay {
-            position: fixed;
-            inset: 0;
-            background: var(--bg);
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
+        #loader { position: fixed; inset: 0; background: var(--bg); z-index: 9999; display: flex; flex-direction: column; items-center; justify-content: center; text-align: center; }
     </style>
 </head>
 <body class="min-h-screen">
 
-    <div id="loading-overlay">
-        <div class="neu-flat w-16 h-16 rounded-full flex items-center justify-center animate-spin mb-4">
-            <i class="fas fa-circle-notch text-indigo-500 text-2xl"></i>
+    <div id="loader">
+        <div class="neu-flat w-16 h-16 rounded-full flex items-center justify-center animate-spin mb-4 mx-auto">
+            <i class="fas fa-sync text-indigo-500 text-2xl"></i>
         </div>
-        <p class="text-xs font-bold text-slate-500 tracking-widest">CONNECTING TO FIREBASE...</p>
+        <p class="text-xs font-bold text-slate-500 tracking-widest uppercase">Connecting to Cloud Engine...</p>
     </div>
 
-    <!-- Nav -->
+    <!-- Navigation -->
     <nav class="sticky top-0 z-50 p-4 flex items-center justify-between bg-[#e0e5ec]/90 backdrop-blur-md">
         <div class="flex items-center space-x-3">
-            <div class="neu-flat w-10 h-10 rounded-xl flex items-center justify-center text-indigo-500">
-                <i class="fas fa-graduation-cap"></i>
+            <div class="neu-flat w-10 h-10 rounded-xl flex items-center justify-center text-indigo-600">
+                <i class="fas fa-bolt"></i>
             </div>
-            <h1 class="font-bold text-lg">EduTrack Cloud</h1>
+            <h1 class="font-bold text-lg hidden sm:block">EduTrack Pro</h1>
         </div>
         <div class="flex space-x-2">
-            <button onclick="showPage('dashboard')" id="nav-dashboard" class="neu-button px-4 py-2 rounded-xl text-xs font-bold active">Dashboard</button>
-            <button onclick="showPage('admin')" id="nav-admin" class="neu-button px-4 py-2 rounded-xl text-xs font-bold">Admin</button>
+            <button onclick="showPage('dashboard')" id="nav-dashboard" class="neu-button px-5 py-2.5 rounded-xl text-xs font-bold active">Dashboard</button>
+            <button onclick="showPage('admin')" id="nav-admin" class="neu-button px-5 py-2.5 rounded-xl text-xs font-bold">Admin</button>
         </div>
     </nav>
 
     <main class="max-w-6xl mx-auto p-4 lg:p-8">
         
-        <!-- Dashboard Section -->
+        <!-- Dashboard -->
         <section id="page-dashboard" class="space-y-8">
-            <!-- Exam Selector -->
-            <div class="flex flex-wrap gap-3">
+            <div class="flex flex-wrap gap-2 overflow-x-auto pb-2">
                 <button onclick="setExam('BCS')" data-exam="BCS" class="exam-tab neu-button px-6 py-3 rounded-2xl text-xs font-bold active">BCS</button>
                 <button onclick="setExam('Bank')" data-exam="Bank" class="exam-tab neu-button px-6 py-3 rounded-2xl text-xs font-bold">Bank</button>
                 <button onclick="setExam('Primary')" data-exam="Primary" class="exam-tab neu-button px-6 py-3 rounded-2xl text-xs font-bold">Primary</button>
                 <button onclick="setExam('NTRCA')" data-exam="NTRCA" class="exam-tab neu-button px-6 py-3 rounded-2xl text-xs font-bold">NTRCA</button>
-                <button onclick="setExam('Grade11-20')" data-exam="Grade11-20" class="exam-tab neu-button px-6 py-3 rounded-2xl text-xs font-bold">11-20 Grade</button>
+                <button onclick="setExam('Grade11-20')" data-exam="Grade11-20" class="exam-tab neu-button px-6 py-3 rounded-2xl text-xs font-bold whitespace-nowrap">11-20 Grade</button>
             </div>
 
-            <!-- Stats Bar -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="neu-flat p-6 rounded-3xl flex items-center space-x-4">
-                    <div class="w-12 h-12 rounded-2xl neu-pressed flex items-center justify-center text-indigo-500">
-                        <i class="fas fa-chart-line"></i>
-                    </div>
-                    <div>
-                        <h4 id="stat-progress" class="text-2xl font-black">0%</h4>
-                        <p class="text-[10px] font-bold text-slate-400 uppercase">Preparation Score</p>
-                    </div>
+                <div class="neu-flat p-6 rounded-[2rem] flex items-center space-x-4">
+                    <div class="w-12 h-12 rounded-2xl neu-pressed flex items-center justify-center text-indigo-500"><i class="fas fa-pie-chart"></i></div>
+                    <div><h4 id="stat-progress" class="text-2xl font-black">0%</h4><p class="text-[9px] font-bold text-slate-400 uppercase">Preparation</p></div>
                 </div>
-                <div class="neu-flat p-6 rounded-3xl flex items-center space-x-4">
-                    <div class="w-12 h-12 rounded-2xl neu-pressed flex items-center justify-center text-emerald-500">
-                        <i class="fas fa-check-circle"></i>
-                    </div>
-                    <div>
-                        <h4 id="stat-completed" class="text-2xl font-black">0/0</h4>
-                        <p class="text-[10px] font-bold text-slate-400 uppercase">Topics Done</p>
-                    </div>
+                <div class="neu-flat p-6 rounded-[2rem] flex items-center space-x-4">
+                    <div class="w-12 h-12 rounded-2xl neu-pressed flex items-center justify-center text-emerald-500"><i class="fas fa-check-double"></i></div>
+                    <div><h4 id="stat-completed" class="text-2xl font-black">0/0</h4><p class="text-[9px] font-bold text-slate-400 uppercase">Topics</p></div>
                 </div>
-                <div class="neu-flat p-6 rounded-3xl flex items-center space-x-4">
-                    <div class="w-12 h-12 rounded-2xl neu-pressed flex items-center justify-center text-amber-500">
-                        <i class="fas fa-clock"></i>
-                    </div>
-                    <div>
-                        <h4 id="stat-time" class="text-2xl font-black">0h</h4>
-                        <p class="text-[10px] font-bold text-slate-400 uppercase">Total Study Time</p>
-                    </div>
+                <div class="neu-flat p-6 rounded-[2rem] flex items-center space-x-4">
+                    <div class="w-12 h-12 rounded-2xl neu-pressed flex items-center justify-center text-orange-500"><i class="fas fa-database"></i></div>
+                    <div><h4 id="stat-exam" class="text-xl font-black uppercase">BCS</h4><p class="text-[9px] font-bold text-slate-400 uppercase">Current Goal</p></div>
                 </div>
             </div>
 
-            <!-- Syllabus View -->
-            <div id="syllabus-display" class="space-y-6"></div>
+            <div id="syllabus-list" class="space-y-6"></div>
         </section>
 
-        <!-- Admin Section -->
+        <!-- Admin -->
         <section id="page-admin" class="hidden-section space-y-6">
-            <div class="neu-flat p-8 rounded-[2rem]">
-                <h2 class="text-xl font-bold mb-6">Cloud Data Manager (<span id="admin-exam-label" class="text-indigo-500">BCS</span>)</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                    <input type="text" id="inp-sub" placeholder="Subject Name" class="neu-pressed p-4 rounded-xl outline-none text-sm">
-                    <input type="text" id="inp-topic" placeholder="Topic Name" class="neu-pressed p-4 rounded-xl outline-none text-sm">
-                    <input type="text" id="inp-book" placeholder="Source Book" class="neu-pressed p-4 rounded-xl outline-none text-sm">
+            <div class="neu-flat p-8 rounded-[2.5rem]">
+                <h2 class="text-xl font-bold mb-6">Cloud Editor: <span id="admin-exam-tag" class="text-indigo-600">BCS</span></h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <input type="text" id="in-sub" placeholder="Subject" class="neu-pressed p-4 rounded-2xl outline-none text-sm font-semibold">
+                    <input type="text" id="in-topic" placeholder="Topic Title" class="neu-pressed p-4 rounded-2xl outline-none text-sm font-semibold">
+                    <input type="text" id="in-book" placeholder="Source/Book" class="neu-pressed p-4 rounded-2xl outline-none text-sm font-semibold">
                 </div>
-                <button onclick="saveToCloud()" class="neu-button px-8 py-4 rounded-xl font-bold text-indigo-600 w-full md:w-auto">
-                    <i class="fas fa-cloud-upload-alt mr-2"></i> Save to Firestore
+                <button onclick="pushToCloud()" class="neu-button px-10 py-4 rounded-2xl font-bold text-indigo-600">
+                    <i class="fas fa-plus-circle mr-2"></i> Deploy to Firestore
                 </button>
             </div>
 
-            <div class="neu-flat rounded-[2rem] overflow-hidden">
-                <table class="w-full text-left">
-                    <thead class="bg-slate-100">
-                        <tr class="text-[10px] font-bold uppercase text-slate-400 tracking-widest">
-                            <th class="p-4">Subject</th>
-                            <th class="p-4">Topic</th>
-                            <th class="p-4 text-right">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="admin-table-body" class="text-sm"></tbody>
-                </table>
+            <div class="neu-flat rounded-[2.5rem] overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-slate-50">
+                            <tr class="text-[10px] font-black uppercase text-slate-400 tracking-tighter">
+                                <th class="p-6">Subject</th>
+                                <th class="p-6">Topic</th>
+                                <th class="p-6 text-right">Delete</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-rows" class="text-sm"></tbody>
+                    </table>
+                </div>
             </div>
         </section>
     </main>
@@ -167,9 +107,8 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, addDoc, deleteDoc, onSnapshot, query } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+        import { getFirestore, collection, doc, setDoc, addDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
-        // Your Config
         const firebaseConfig = {
             apiKey: "AIzaSyBY2sVcdpIydP4XjSBt1GHzhc2-mqJUtdE",
             authDomain: "edutrack-pro-b771d.firebaseapp.com",
@@ -184,59 +123,64 @@
         const db = getFirestore(app);
         const appId = "edutrack-pro-b771d";
 
-        window.state = {
+        window.appState = {
             user: null,
             exam: 'BCS',
-            data: [],
+            topics: [],
             progress: {}
         };
 
-        // Initialize Auth
-        const init = async () => {
-            await signInAnonymously(auth);
+        // Auth Logic for Vercel & Browser
+        const initAuth = async () => {
+            try {
+                await signInAnonymously(auth);
+            } catch (err) {
+                console.error("Auth Error:", err);
+                alert("Cloud Connection Failed. Check Firebase Console Authorized Domains.");
+            }
         };
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                window.state.user = user;
-                document.getElementById('loading-overlay').style.display = 'none';
-                startSync();
+                window.appState.user = user;
+                document.getElementById('loader').style.display = 'none';
+                startRealtimeSync();
             }
         });
 
-        init();
+        initAuth();
 
-        // Sync Data
-        function startSync() {
+        // Real-time Cloud Sync
+        function startRealtimeSync() {
             const exams = ['BCS', 'Bank', 'Primary', 'NTRCA', 'Grade11-20'];
             exams.forEach(ex => {
-                // Syllabus Listener
+                // Sync Syllabus
                 onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', `syllabus_${ex}`), (snap) => {
-                    if (window.state.exam === ex) {
-                        window.state.data = snap.docs.map(d => ({id: d.id, ...d.data()}));
-                        render();
+                    if (window.appState.exam === ex) {
+                        window.appState.topics = snap.docs.map(d => ({id: d.id, ...d.data()}));
+                        renderUI();
                     }
                 });
 
-                // User Progress Listener
-                onSnapshot(doc(db, 'artifacts', appId, 'users', window.state.user.uid, 'progress', ex), (snap) => {
+                // Sync User Progress
+                onSnapshot(doc(db, 'artifacts', appId, 'users', window.appState.user.uid, 'progress', ex), (snap) => {
                     if (snap.exists()) {
-                        window.state.progress[ex] = snap.data();
-                        render();
+                        window.appState.progress[ex] = snap.data();
+                        renderUI();
                     } else {
-                        window.state.progress[ex] = {};
+                        window.appState.progress[ex] = {};
                     }
                 });
             });
         }
 
-        // Functions
+        // Action Handlers
         window.setExam = (ex) => {
-            window.state.exam = ex;
+            window.appState.exam = ex;
             document.querySelectorAll('.exam-tab').forEach(b => b.classList.toggle('active', b.dataset.exam === ex));
-            document.getElementById('admin-exam-label').innerText = ex;
-            // Force re-fetch logic handled by listeners
-            render();
+            document.getElementById('admin-exam-tag').innerText = ex;
+            document.getElementById('stat-exam').innerText = ex;
+            renderUI();
         };
 
         window.showPage = (p) => {
@@ -246,90 +190,91 @@
             document.getElementById('nav-admin').classList.toggle('active', p === 'admin');
         };
 
-        window.saveToCloud = async () => {
-            const subject = document.getElementById('inp-sub').value;
-            const topic = document.getElementById('inp-topic').value;
-            const book = document.getElementById('inp-book').value;
+        window.pushToCloud = async () => {
+            const sub = document.getElementById('in-sub').value;
+            const topic = document.getElementById('in-topic').value;
+            const book = document.getElementById('in-book').value;
 
-            if(!subject || !topic) return alert("Fill subject and topic");
+            if(!sub || !topic) return;
 
-            await addDoc(collection(db, 'artifacts', appId, 'public', 'data', `syllabus_${window.state.exam}`), {
-                subject, topic, book, time: Date.now()
-            });
-
-            document.getElementById('inp-sub').value = '';
-            document.getElementById('inp-topic').value = '';
-            document.getElementById('inp-book').value = '';
+            try {
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', `syllabus_${window.appState.exam}`), {
+                    subject: sub, topic: topic, book: book, timestamp: Date.now()
+                });
+                document.getElementById('in-sub').value = '';
+                document.getElementById('in-topic').value = '';
+                document.getElementById('in-book').value = '';
+            } catch (e) { console.error(e); }
         };
 
-        window.deleteTopic = async (id) => {
-            await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', `syllabus_${window.state.exam}`, id));
+        window.removeItem = async (id) => {
+            await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', `syllabus_${window.appState.exam}`, id));
         };
 
-        window.toggleComplete = async (id) => {
-            const ex = window.state.exam;
-            const current = window.state.progress[ex]?.[id] || { status: 'pending' };
-            const newStatus = current.status === 'completed' ? 'pending' : 'completed';
+        window.toggleStatus = async (id) => {
+            const ex = window.appState.exam;
+            const current = window.appState.progress[ex]?.[id]?.status || 'pending';
+            const next = current === 'completed' ? 'pending' : 'completed';
 
-            await setDoc(doc(db, 'artifacts', appId, 'users', window.state.user.uid, 'progress', ex), {
-                [id]: { status: newStatus, updatedAt: Date.now() }
+            await setDoc(doc(db, 'artifacts', appId, 'users', window.appState.user.uid, 'progress', ex), {
+                [id]: { status: next, updatedAt: Date.now() }
             }, { merge: true });
         };
 
-        function render() {
-            const ex = window.state.exam;
-            const syllabus = window.state.data;
-            const progress = window.state.progress[ex] || {};
+        function renderUI() {
+            const ex = window.appState.exam;
+            const topics = window.appState.topics;
+            const progress = window.appState.progress[ex] || {};
 
             // Render Dashboard
-            const display = document.getElementById('syllabus-display');
-            display.innerHTML = '';
+            const list = document.getElementById('syllabus-list');
+            list.innerHTML = '';
             
-            const grouped = syllabus.reduce((acc, item) => {
-                if(!acc[item.subject]) acc[item.subject] = [];
-                acc[item.subject].push(item);
+            const grouped = topics.reduce((acc, t) => {
+                if(!acc[t.subject]) acc[t.subject] = [];
+                acc[t.subject].push(t);
                 return acc;
             }, {});
 
             for(const sub in grouped) {
-                const subBox = document.createElement('div');
-                subBox.innerHTML = `<h3 class="text-xs font-black text-slate-400 uppercase mb-3 ml-2">${sub}</h3>`;
-                grouped[sub].forEach(item => {
-                    const done = progress[item.id]?.status === 'completed';
-                    subBox.innerHTML += `
-                        <div class="neu-flat p-4 rounded-2xl mb-3 flex items-center justify-between">
+                const subEl = document.createElement('div');
+                subEl.innerHTML = `<h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-2">${sub}</h3>`;
+                grouped[sub].forEach(t => {
+                    const isDone = progress[t.id]?.status === 'completed';
+                    subEl.innerHTML += `
+                        <div class="neu-flat p-5 rounded-2xl mb-4 flex items-center justify-between">
                             <div class="flex items-center space-x-4">
-                                <button onclick="toggleComplete('${item.id}')" class="w-8 h-8 rounded-full ${done ? 'neu-pressed text-emerald-500' : 'neu-button'} flex items-center justify-center">
-                                    <i class="fas ${done ? 'fa-check' : 'fa-circle text-[4px]'}"></i>
+                                <button onclick="toggleStatus('${t.id}')" class="w-10 h-10 rounded-full ${isDone ? 'neu-pressed text-emerald-500' : 'neu-button'} flex items-center justify-center">
+                                    <i class="fas ${isDone ? 'fa-check' : 'fa-circle text-[4px]'}"></i>
                                 </button>
                                 <div>
-                                    <p class="font-bold text-sm ${done ? 'line-through text-slate-300' : ''}">${item.topic}</p>
-                                    <p class="text-[9px] font-bold text-slate-400 uppercase">${item.book || 'No Source'}</p>
+                                    <p class="font-bold text-sm ${isDone ? 'line-through text-slate-300' : 'text-slate-800'}">${t.topic}</p>
+                                    <p class="text-[9px] font-bold text-slate-400 uppercase">${t.book || 'General Study'}</p>
                                 </div>
                             </div>
                         </div>
                     `;
                 });
-                display.appendChild(subBox);
+                list.appendChild(subEl);
             }
 
             // Render Admin
-            const adminBody = document.getElementById('admin-table-body');
-            adminBody.innerHTML = syllabus.map(i => `
-                <tr class="border-b border-white/20">
-                    <td class="p-4 font-bold text-indigo-500">${i.subject}</td>
-                    <td class="p-4 font-medium">${i.topic}</td>
-                    <td class="p-4 text-right">
-                        <button onclick="deleteTopic('${i.id}')" class="text-rose-400 p-2"><i class="fas fa-trash"></i></button>
+            const rows = document.getElementById('admin-rows');
+            rows.innerHTML = topics.map(t => `
+                <tr class="border-b border-white/30">
+                    <td class="p-6 font-bold text-indigo-600">${t.subject}</td>
+                    <td class="p-6 font-semibold">${t.topic}</td>
+                    <td class="p-6 text-right">
+                        <button onclick="removeItem('${t.id}')" class="text-rose-400 hover:text-rose-600 transition"><i class="fas fa-trash-alt"></i></button>
                     </td>
                 </tr>
             `).join('');
 
-            // Stats
-            const completed = syllabus.filter(i => progress[i.id]?.status === 'completed').length;
-            const total = syllabus.length;
-            document.getElementById('stat-progress').innerText = total ? Math.round((completed/total)*100) + '%' : '0%';
-            document.getElementById('stat-completed').innerText = `${completed}/${total}`;
+            // Update Stats
+            const done = topics.filter(t => progress[t.id]?.status === 'completed').length;
+            const total = topics.length;
+            document.getElementById('stat-progress').innerText = total ? Math.round((done/total)*100) + '%' : '0%';
+            document.getElementById('stat-completed').innerText = `${done}/${total}`;
         }
     </script>
 </body>
