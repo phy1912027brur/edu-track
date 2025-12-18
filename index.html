@@ -1,113 +1,176 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EduTrack Pro | Multi-Exam Cloud Tracker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>EduTrack Pro | Premium Syllabus Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap');
-        :root { --bg: #e0e5ec; --shadow-dark: #a3b1c6; --shadow-light: #ffffff; --primary: #6d5dfc; }
-        body { font-family: 'Quicksand', sans-serif; background-color: var(--bg); color: #444; }
-        .neu-flat { background: var(--bg); box-shadow: 8px 8px 15px var(--shadow-dark), -8px -8px 15px var(--shadow-light); }
-        .neu-pressed { background: var(--bg); box-shadow: inset 6px 6px 12px var(--shadow-dark), inset -6px -6px 12px var(--shadow-light); }
-        .neu-button { background: var(--bg); box-shadow: 5px 5px 10px var(--shadow-dark), -5px -5px 10px var(--shadow-light); transition: 0.2s; cursor: pointer; }
-        .neu-button:active { box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light); transform: scale(0.98); }
-        .neu-button.active { box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light); color: var(--primary); font-weight: 700; }
-        .hidden-section { display: none; }
-        #loader { position: fixed; inset: 0; background: var(--bg); z-index: 9999; display: flex; flex-direction: column; items-center; justify-content: center; text-align: center; }
+        
+        :root {
+            --bg: #e0e5ec;
+            --shadow-dark: #a3b1c6;
+            --shadow-light: #ffffff;
+            --primary: #6d5dfc;
+            --accent: #4ade80;
+        }
+
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background-color: var(--bg);
+            color: #444;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .neu-flat {
+            background: var(--bg);
+            box-shadow: 8px 8px 15px var(--shadow-dark), -8px -8px 15px var(--shadow-light);
+        }
+
+        .neu-pressed {
+            background: var(--bg);
+            box-shadow: inset 6px 6px 12px var(--shadow-dark), inset -6px -6px 12px var(--shadow-light);
+        }
+
+        .neu-button {
+            background: var(--bg);
+            box-shadow: 5px 5px 10px var(--shadow-dark), -5px -5px 10px var(--shadow-light);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            border: none;
+        }
+
+        .neu-button:active {
+            box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
+            transform: scale(0.97);
+        }
+
+        .neu-button.active {
+            box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        
+        #loader {
+            position: fixed; inset: 0; background: var(--bg); z-index: 1000;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+
+        .status-badge {
+            font-size: 0.65rem;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .floating { animation: float 3s ease-in-out infinite; }
     </style>
 </head>
 <body class="min-h-screen">
 
+    <!-- Global Loader -->
     <div id="loader">
-        <div class="neu-flat w-16 h-16 rounded-full flex items-center justify-center animate-spin mb-4 mx-auto">
-            <i class="fas fa-sync text-indigo-500 text-2xl"></i>
+        <div class="neu-flat w-24 h-24 rounded-3xl flex items-center justify-center floating mb-6">
+            <i class="fas fa-graduation-cap text-3xl text-indigo-500"></i>
         </div>
-        <p class="text-xs font-bold text-slate-500 tracking-widest uppercase">Connecting to Cloud Engine...</p>
+        <p class="text-[10px] font-black tracking-[0.3em] uppercase text-slate-500 animate-pulse">Initializing Cloud...</p>
     </div>
 
     <!-- Navigation -->
-    <nav class="sticky top-0 z-50 p-4 flex items-center justify-between bg-[#e0e5ec]/90 backdrop-blur-md">
+    <nav class="sticky top-0 z-50 p-4 flex items-center justify-between bg-[#e0e5ec]/80 backdrop-blur-md">
         <div class="flex items-center space-x-3">
             <div class="neu-flat w-10 h-10 rounded-xl flex items-center justify-center text-indigo-600">
-                <i class="fas fa-bolt"></i>
+                <i class="fas fa-rocket"></i>
             </div>
-            <h1 class="font-bold text-lg hidden sm:block">EduTrack Pro</h1>
+            <span class="font-bold text-lg tracking-tight">EduTrack <span class="text-indigo-600">Pro</span></span>
         </div>
         <div class="flex space-x-2">
-            <button onclick="showPage('dashboard')" id="nav-dashboard" class="neu-button px-5 py-2.5 rounded-xl text-xs font-bold active">Dashboard</button>
-            <button onclick="showPage('admin')" id="nav-admin" class="neu-button px-5 py-2.5 rounded-xl text-xs font-bold">Admin</button>
+            <button id="btn-dash" onclick="navigate('dashboard')" class="neu-button px-4 py-2 rounded-xl text-[10px] font-bold active">DASHBOARD</button>
+            <button id="btn-adm" onclick="navigate('admin')" class="neu-button px-4 py-2 rounded-xl text-[10px] font-bold">ADMIN</button>
         </div>
     </nav>
 
-    <main class="max-w-6xl mx-auto p-4 lg:p-8">
+    <main class="max-w-4xl mx-auto p-4 lg:p-8">
         
-        <!-- Dashboard -->
-        <section id="page-dashboard" class="space-y-8">
-            <div class="flex flex-wrap gap-2 overflow-x-auto pb-2">
-                <button onclick="setExam('BCS')" data-exam="BCS" class="exam-tab neu-button px-6 py-3 rounded-2xl text-xs font-bold active">BCS</button>
-                <button onclick="setExam('Bank')" data-exam="Bank" class="exam-tab neu-button px-6 py-3 rounded-2xl text-xs font-bold">Bank</button>
-                <button onclick="setExam('Primary')" data-exam="Primary" class="exam-tab neu-button px-6 py-3 rounded-2xl text-xs font-bold">Primary</button>
-                <button onclick="setExam('NTRCA')" data-exam="NTRCA" class="exam-tab neu-button px-6 py-3 rounded-2xl text-xs font-bold">NTRCA</button>
-                <button onclick="setExam('Grade11-20')" data-exam="Grade11-20" class="exam-tab neu-button px-6 py-3 rounded-2xl text-xs font-bold whitespace-nowrap">11-20 Grade</button>
+        <!-- DASHBOARD PAGE -->
+        <section id="view-dashboard" class="space-y-6">
+            <!-- Exam Tabs -->
+            <div class="flex space-x-3 overflow-x-auto py-2 no-scrollbar">
+                <button onclick="setExam('BCS')" class="exam-tab neu-button px-6 py-3 rounded-2xl text-[10px] font-bold active" data-exam="BCS">BCS</button>
+                <button onclick="setExam('Bank')" class="exam-tab neu-button px-6 py-3 rounded-2xl text-[10px] font-bold" data-exam="Bank">BANK</button>
+                <button onclick="setExam('Primary')" class="exam-tab neu-button px-6 py-3 rounded-2xl text-[10px] font-bold" data-exam="Primary">PRIMARY</button>
+                <button onclick="setExam('NTRCA')" class="exam-tab neu-button px-6 py-3 rounded-2xl text-[10px] font-bold" data-exam="NTRCA">NTRCA</button>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="neu-flat p-6 rounded-[2rem] flex items-center space-x-4">
-                    <div class="w-12 h-12 rounded-2xl neu-pressed flex items-center justify-center text-indigo-500"><i class="fas fa-pie-chart"></i></div>
-                    <div><h4 id="stat-progress" class="text-2xl font-black">0%</h4><p class="text-[9px] font-bold text-slate-400 uppercase">Preparation</p></div>
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div class="neu-flat p-6 rounded-[2rem] text-center">
+                    <h2 id="stat-percent" class="text-3xl font-black text-indigo-600">0%</h2>
+                    <p class="text-[9px] font-bold text-slate-400 uppercase mt-1">Completion</p>
                 </div>
-                <div class="neu-flat p-6 rounded-[2rem] flex items-center space-x-4">
-                    <div class="w-12 h-12 rounded-2xl neu-pressed flex items-center justify-center text-emerald-500"><i class="fas fa-check-double"></i></div>
-                    <div><h4 id="stat-completed" class="text-2xl font-black">0/0</h4><p class="text-[9px] font-bold text-slate-400 uppercase">Topics</p></div>
+                <div class="neu-flat p-6 rounded-[2rem] text-center">
+                    <h2 id="stat-count" class="text-3xl font-black text-slate-700">0/0</h2>
+                    <p class="text-[9px] font-bold text-slate-400 uppercase mt-1">Topics Finished</p>
                 </div>
-                <div class="neu-flat p-6 rounded-[2rem] flex items-center space-x-4">
-                    <div class="w-12 h-12 rounded-2xl neu-pressed flex items-center justify-center text-orange-500"><i class="fas fa-database"></i></div>
-                    <div><h4 id="stat-exam" class="text-xl font-black uppercase">BCS</h4><p class="text-[9px] font-bold text-slate-400 uppercase">Current Goal</p></div>
+                <div class="neu-flat p-6 rounded-[2rem] text-center col-span-2 md:col-span-1 border-2 border-indigo-200/50">
+                    <h2 id="active-exam-label" class="text-2xl font-black text-slate-800 uppercase">BCS</h2>
+                    <p class="text-[9px] font-bold text-slate-400 uppercase mt-1">Current Goal</p>
                 </div>
             </div>
 
-            <div id="syllabus-list" class="space-y-6"></div>
+            <!-- Syllabus Feed -->
+            <div id="syllabus-container" class="space-y-8 pt-4 pb-20">
+                <!-- Grouped Content will inject here -->
+            </div>
         </section>
 
-        <!-- Admin -->
-        <section id="page-admin" class="hidden-section space-y-6">
-            <div class="neu-flat p-8 rounded-[2.5rem]">
-                <h2 class="text-xl font-bold mb-6">Cloud Editor: <span id="admin-exam-tag" class="text-indigo-600">BCS</span></h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <input type="text" id="in-sub" placeholder="Subject" class="neu-pressed p-4 rounded-2xl outline-none text-sm font-semibold">
-                    <input type="text" id="in-topic" placeholder="Topic Title" class="neu-pressed p-4 rounded-2xl outline-none text-sm font-semibold">
-                    <input type="text" id="in-book" placeholder="Source/Book" class="neu-pressed p-4 rounded-2xl outline-none text-sm font-semibold">
+        <!-- ADMIN PAGE -->
+        <section id="view-admin" class="hidden space-y-6">
+            <div class="neu-flat p-6 rounded-[2.5rem]">
+                <h3 class="font-bold text-sm mb-4 flex items-center">
+                    <i class="fas fa-plus-circle mr-2 text-indigo-500"></i>
+                    Add Content for <span id="admin-exam-name" class="ml-1 text-indigo-600 underline">BCS</span>
+                </h3>
+                <div class="space-y-3">
+                    <input type="text" id="add-sub" placeholder="Subject (e.g. History)" class="neu-pressed w-full p-4 rounded-2xl outline-none text-sm font-semibold border-none">
+                    <input type="text" id="add-topic" placeholder="Topic Title" class="neu-pressed w-full p-4 rounded-2xl outline-none text-sm font-semibold border-none">
+                    <input type="text" id="add-book" placeholder="Reference Book (Optional)" class="neu-pressed w-full p-4 rounded-2xl outline-none text-sm font-semibold border-none">
+                    <button onclick="handleUpload()" class="neu-button w-full py-4 rounded-2xl font-bold text-indigo-600 flex items-center justify-center space-x-2">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <span>PUBLISH TO CLOUD</span>
+                    </button>
                 </div>
-                <button onclick="pushToCloud()" class="neu-button px-10 py-4 rounded-2xl font-bold text-indigo-600">
-                    <i class="fas fa-plus-circle mr-2"></i> Deploy to Firestore
-                </button>
             </div>
 
-            <div class="neu-flat rounded-[2.5rem] overflow-hidden">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left">
-                        <thead class="bg-slate-50">
-                            <tr class="text-[10px] font-black uppercase text-slate-400 tracking-tighter">
-                                <th class="p-6">Subject</th>
-                                <th class="p-6">Topic</th>
-                                <th class="p-6 text-right">Delete</th>
-                            </tr>
-                        </thead>
-                        <tbody id="admin-rows" class="text-sm"></tbody>
-                    </table>
-                </div>
+            <div class="neu-flat rounded-[2rem] overflow-hidden">
+                <table class="w-full text-left">
+                    <thead class="bg-slate-100/50 text-[10px] font-black uppercase text-slate-400">
+                        <tr>
+                            <th class="p-4">Topic Details</th>
+                            <th class="p-4 text-right">Manage</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-list" class="divide-y divide-white/20 text-sm"></tbody>
+                </table>
             </div>
         </section>
     </main>
 
+    <!-- Scripts -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, addDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+        import { getFirestore, collection, doc, setDoc, addDoc, deleteDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBY2sVcdpIydP4XjSBt1GHzhc2-mqJUtdE",
@@ -121,160 +184,170 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const appId = "edutrack-pro-b771d";
+        const APP_ID = "edutrack-pro-b771d";
 
-        window.appState = {
+        // Global State
+        window.state = {
             user: null,
-            exam: 'BCS',
+            currentExam: 'BCS',
             topics: [],
-            progress: {}
+            userProgress: {},
+            subscriptions: []
         };
 
-        // Auth Logic for Vercel & Browser
-        const initAuth = async () => {
-            try {
-                await signInAnonymously(auth);
-            } catch (err) {
-                console.error("Auth Error:", err);
-                alert("Cloud Connection Failed. Check Firebase Console Authorized Domains.");
-            }
-        };
-
+        // Initialize App
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                window.appState.user = user;
+                window.state.user = user;
                 document.getElementById('loader').style.display = 'none';
-                startRealtimeSync();
+                initSync();
+            } else {
+                signInAnonymously(auth).catch(err => {
+                    alert("Sync Error: Please ensure domain is authorized in Firebase console.");
+                });
             }
         });
 
-        initAuth();
+        function initSync() {
+            // Unsubscribe existing listeners
+            window.state.subscriptions.forEach(unsub => unsub());
+            window.state.subscriptions = [];
 
-        // Real-time Cloud Sync
-        function startRealtimeSync() {
-            const exams = ['BCS', 'Bank', 'Primary', 'NTRCA', 'Grade11-20'];
-            exams.forEach(ex => {
-                // Sync Syllabus
-                onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', `syllabus_${ex}`), (snap) => {
-                    if (window.appState.exam === ex) {
-                        window.appState.topics = snap.docs.map(d => ({id: d.id, ...d.data()}));
-                        renderUI();
-                    }
-                });
+            const ex = window.state.currentExam;
 
-                // Sync User Progress
-                onSnapshot(doc(db, 'artifacts', appId, 'users', window.appState.user.uid, 'progress', ex), (snap) => {
-                    if (snap.exists()) {
-                        window.appState.progress[ex] = snap.data();
-                        renderUI();
-                    } else {
-                        window.appState.progress[ex] = {};
-                    }
-                });
+            // 1. Sync Syllabus
+            const qSyllabus = query(collection(db, 'artifacts', APP_ID, 'public', 'data', `syllabus_${ex}`), orderBy('timestamp', 'desc'));
+            const unsubSyllabus = onSnapshot(qSyllabus, (snap) => {
+                window.state.topics = snap.docs.map(d => ({id: d.id, ...d.data()}));
+                render();
             });
+
+            // 2. Sync Progress
+            const unsubProgress = onSnapshot(doc(db, 'artifacts', APP_ID, 'users', window.state.user.uid, 'progress', ex), (snap) => {
+                window.state.userProgress = snap.exists() ? snap.data() : {};
+                render();
+            });
+
+            window.state.subscriptions.push(unsubSyllabus, unsubProgress);
         }
 
-        // Action Handlers
-        window.setExam = (ex) => {
-            window.appState.exam = ex;
-            document.querySelectorAll('.exam-tab').forEach(b => b.classList.toggle('active', b.dataset.exam === ex));
-            document.getElementById('admin-exam-tag').innerText = ex;
-            document.getElementById('stat-exam').innerText = ex;
-            renderUI();
+        // Actions
+        window.setExam = (exam) => {
+            window.state.currentExam = exam;
+            document.querySelectorAll('.exam-tab').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.exam === exam);
+            });
+            document.getElementById('admin-exam-name').innerText = exam;
+            document.getElementById('active-exam-label').innerText = exam;
+            initSync();
         };
 
-        window.showPage = (p) => {
-            document.getElementById('page-dashboard').classList.toggle('hidden-section', p !== 'dashboard');
-            document.getElementById('page-admin').classList.toggle('hidden-section', p !== 'admin');
-            document.getElementById('nav-dashboard').classList.toggle('active', p === 'dashboard');
-            document.getElementById('nav-admin').classList.toggle('active', p === 'admin');
+        window.navigate = (page) => {
+            document.getElementById('view-dashboard').classList.toggle('hidden', page !== 'dashboard');
+            document.getElementById('view-admin').classList.toggle('hidden', page !== 'admin');
+            document.getElementById('btn-dash').classList.toggle('active', page === 'dashboard');
+            document.getElementById('btn-adm').classList.toggle('active', page === 'admin');
         };
 
-        window.pushToCloud = async () => {
-            const sub = document.getElementById('in-sub').value;
-            const topic = document.getElementById('in-topic').value;
-            const book = document.getElementById('in-book').value;
+        window.handleUpload = async () => {
+            const sub = document.getElementById('add-sub').value.trim();
+            const topic = document.getElementById('add-topic').value.trim();
+            const book = document.getElementById('add-book').value.trim();
 
-            if(!sub || !topic) return;
+            if (!sub || !topic) return;
 
             try {
-                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', `syllabus_${window.appState.exam}`), {
-                    subject: sub, topic: topic, book: book, timestamp: Date.now()
+                await addDoc(collection(db, 'artifacts', APP_ID, 'public', 'data', `syllabus_${window.state.currentExam}`), {
+                    subject: sub,
+                    topic: topic,
+                    book: book || "General Source",
+                    timestamp: Date.now()
                 });
-                document.getElementById('in-sub').value = '';
-                document.getElementById('in-topic').value = '';
-                document.getElementById('in-book').value = '';
+                document.getElementById('add-sub').value = '';
+                document.getElementById('add-topic').value = '';
+                document.getElementById('add-book').value = '';
             } catch (e) { console.error(e); }
         };
 
-        window.removeItem = async (id) => {
-            await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', `syllabus_${window.appState.exam}`, id));
-        };
-
-        window.toggleStatus = async (id) => {
-            const ex = window.appState.exam;
-            const current = window.appState.progress[ex]?.[id]?.status || 'pending';
+        window.toggleProgress = async (id) => {
+            const current = window.state.userProgress[id]?.status || 'pending';
             const next = current === 'completed' ? 'pending' : 'completed';
 
-            await setDoc(doc(db, 'artifacts', appId, 'users', window.appState.user.uid, 'progress', ex), {
+            await setDoc(doc(db, 'artifacts', APP_ID, 'users', window.state.user.uid, 'progress', window.state.currentExam), {
                 [id]: { status: next, updatedAt: Date.now() }
             }, { merge: true });
         };
 
-        function renderUI() {
-            const ex = window.appState.exam;
-            const topics = window.appState.topics;
-            const progress = window.appState.progress[ex] || {};
+        window.deleteTopic = async (id) => {
+            if (confirm("Permanently delete this topic?")) {
+                await deleteDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', `syllabus_${window.state.currentExam}`, id));
+            }
+        };
 
-            // Render Dashboard
-            const list = document.getElementById('syllabus-list');
-            list.innerHTML = '';
+        // UI Engine
+        function render() {
+            const topics = window.state.topics;
+            const progress = window.state.userProgress;
             
-            const grouped = topics.reduce((acc, t) => {
-                if(!acc[t.subject]) acc[t.subject] = [];
-                acc[t.subject].push(t);
-                return acc;
-            }, {});
+            // Dashboard Render
+            const container = document.getElementById('syllabus-container');
+            container.innerHTML = '';
 
-            for(const sub in grouped) {
-                const subEl = document.createElement('div');
-                subEl.innerHTML = `<h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-2">${sub}</h3>`;
-                grouped[sub].forEach(t => {
+            const subjects = [...new Set(topics.map(t => t.subject))];
+            
+            subjects.forEach(sub => {
+                const subSection = document.createElement('div');
+                subSection.innerHTML = `<h3 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 ml-2">${sub}</h3>`;
+                
+                const subTopics = topics.filter(t => t.subject === sub);
+                subTopics.forEach(t => {
                     const isDone = progress[t.id]?.status === 'completed';
-                    subEl.innerHTML += `
-                        <div class="neu-flat p-5 rounded-2xl mb-4 flex items-center justify-between">
-                            <div class="flex items-center space-x-4">
-                                <button onclick="toggleStatus('${t.id}')" class="w-10 h-10 rounded-full ${isDone ? 'neu-pressed text-emerald-500' : 'neu-button'} flex items-center justify-center">
-                                    <i class="fas ${isDone ? 'fa-check' : 'fa-circle text-[4px]'}"></i>
-                                </button>
-                                <div>
-                                    <p class="font-bold text-sm ${isDone ? 'line-through text-slate-300' : 'text-slate-800'}">${t.topic}</p>
-                                    <p class="text-[9px] font-bold text-slate-400 uppercase">${t.book || 'General Study'}</p>
-                                </div>
+                    const card = document.createElement('div');
+                    card.className = `neu-flat p-4 rounded-2xl mb-4 flex items-center justify-between transition-all ${isDone ? 'opacity-60' : ''}`;
+                    card.innerHTML = `
+                        <div class="flex items-center space-x-4">
+                            <button onclick="toggleProgress('${t.id}')" class="w-10 h-10 rounded-full flex items-center justify-center transition-all ${isDone ? 'neu-pressed text-emerald-500' : 'neu-button text-slate-400'}">
+                                <i class="fas ${isDone ? 'fa-check-circle' : 'fa-circle text-[6px]'}"></i>
+                            </button>
+                            <div>
+                                <p class="font-bold text-sm ${isDone ? 'line-through text-slate-400' : 'text-slate-800'}">${t.topic}</p>
+                                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">${t.book}</p>
                             </div>
                         </div>
+                        ${isDone ? '<span class="status-badge bg-emerald-100 text-emerald-600">Done</span>' : ''}
                     `;
+                    subSection.appendChild(card);
                 });
-                list.appendChild(subEl);
+                container.appendChild(subSection);
+            });
+
+            if (topics.length === 0) {
+                container.innerHTML = `<div class="text-center py-20 opacity-30"><i class="fas fa-folder-open text-4xl mb-2"></i><p class="text-xs font-bold uppercase">No topics found</p></div>`;
             }
 
-            // Render Admin
-            const rows = document.getElementById('admin-rows');
-            rows.innerHTML = topics.map(t => `
-                <tr class="border-b border-white/30">
-                    <td class="p-6 font-bold text-indigo-600">${t.subject}</td>
-                    <td class="p-6 font-semibold">${t.topic}</td>
-                    <td class="p-6 text-right">
-                        <button onclick="removeItem('${t.id}')" class="text-rose-400 hover:text-rose-600 transition"><i class="fas fa-trash-alt"></i></button>
+            // Admin List Render
+            const adminList = document.getElementById('admin-list');
+            adminList.innerHTML = topics.map(t => `
+                <tr class="hover:bg-white/10">
+                    <td class="p-4">
+                        <p class="text-[9px] font-black text-indigo-500 uppercase">${t.subject}</p>
+                        <p class="font-bold text-slate-700">${t.topic}</p>
+                    </td>
+                    <td class="p-4 text-right">
+                        <button onclick="deleteTopic('${t.id}')" class="w-8 h-8 rounded-lg neu-button text-rose-500 text-xs">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
                     </td>
                 </tr>
             `).join('');
 
-            // Update Stats
-            const done = topics.filter(t => progress[t.id]?.status === 'completed').length;
-            const total = topics.length;
-            document.getElementById('stat-progress').innerText = total ? Math.round((done/total)*100) + '%' : '0%';
-            document.getElementById('stat-completed').innerText = `${done}/${total}`;
+            // Stats Update
+            const completedCount = topics.filter(t => progress[t.id]?.status === 'completed').length;
+            const totalCount = topics.length;
+            const percent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+            
+            document.getElementById('stat-percent').innerText = percent + '%';
+            document.getElementById('stat-count').innerText = `${completedCount}/${totalCount}`;
         }
     </script>
 </body>
