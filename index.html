@@ -2,354 +2,465 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>EduTrack Pro | Premium Syllabus Tracker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyFlow - Cloud Study Management</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap');
-        
-        :root {
-            --bg: #e0e5ec;
-            --shadow-dark: #a3b1c6;
-            --shadow-light: #ffffff;
-            --primary: #6d5dfc;
-            --accent: #4ade80;
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; overflow-x: hidden; }
+        .sidebar-active { border-right: 4px solid #3b82f6; background: #eff6ff; color: #1d4ed8; }
+        .loader { border-top-color: #3b82f6; animation: spinner 1.5s linear infinite; }
+        @keyframes spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        #sidebar { transition: transform 0.3s ease-in-out; }
+        @media (max-width: 768px) {
+            #sidebar.hidden-mobile { transform: translateX(-100%); }
+            #sidebar.visible-mobile { transform: translateX(0); }
         }
-
-        body {
-            font-family: 'Quicksand', sans-serif;
-            background-color: var(--bg);
-            color: #444;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        .neu-flat {
-            background: var(--bg);
-            box-shadow: 8px 8px 15px var(--shadow-dark), -8px -8px 15px var(--shadow-light);
-        }
-
-        .neu-pressed {
-            background: var(--bg);
-            box-shadow: inset 6px 6px 12px var(--shadow-dark), inset -6px -6px 12px var(--shadow-light);
-        }
-
-        .neu-button {
-            background: var(--bg);
-            box-shadow: 5px 5px 10px var(--shadow-dark), -5px -5px 10px var(--shadow-light);
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            border: none;
-        }
-
-        .neu-button:active {
-            box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
-            transform: scale(0.97);
-        }
-
-        .neu-button.active {
-            box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
-            color: var(--primary);
-            font-weight: 700;
-        }
-
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        
-        #loader {
-            position: fixed; inset: 0; background: var(--bg); z-index: 1000;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-        }
-
-        .status-badge {
-            font-size: 0.65rem;
-            padding: 2px 8px;
-            border-radius: 20px;
-            font-weight: 800;
-            text-transform: uppercase;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-        
-        .floating { animation: float 3s ease-in-out infinite; }
     </style>
 </head>
-<body class="min-h-screen">
+<body class="text-slate-800">
 
-    <!-- Global Loader -->
-    <div id="loader">
-        <div class="neu-flat w-24 h-24 rounded-3xl flex items-center justify-center floating mb-6">
-            <i class="fas fa-graduation-cap text-3xl text-indigo-500"></i>
+    <!-- Auth Overlay -->
+    <div id="auth-loading" class="fixed inset-0 bg-white z-[100] flex flex-col items-center justify-center p-6 text-center">
+        <div id="loading-spinner" class="loader ease-linear rounded-full border-4 border-t-4 border-slate-200 h-12 w-12 mb-4"></div>
+        <div id="login-ui" class="hidden">
+            <h1 class="text-3xl font-bold text-blue-600 mb-2">StudyFlow</h1>
+            <p class="text-slate-500 mb-8">Your Cloud-Synced Study Partner</p>
+            <button id="google-login-btn" class="flex items-center gap-3 bg-white border border-slate-200 px-6 py-3 rounded-xl font-semibold shadow-sm hover:bg-slate-50 transition-all mx-auto">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" alt="Google">
+                Sign in with Google
+            </button>
         </div>
-        <p class="text-[10px] font-black tracking-[0.3em] uppercase text-slate-500 animate-pulse">Initializing Cloud...</p>
+        <p id="loading-text" class="text-slate-500 font-medium animate-pulse mt-4">Syncing with Cloud...</p>
     </div>
 
-    <!-- Navigation -->
-    <nav class="sticky top-0 z-50 p-4 flex items-center justify-between bg-[#e0e5ec]/80 backdrop-blur-md">
-        <div class="flex items-center space-x-3">
-            <div class="neu-flat w-10 h-10 rounded-xl flex items-center justify-center text-indigo-600">
-                <i class="fas fa-rocket"></i>
-            </div>
-            <span class="font-bold text-lg tracking-tight">EduTrack <span class="text-indigo-600">Pro</span></span>
-        </div>
-        <div class="flex space-x-2">
-            <button id="btn-dash" onclick="navigate('dashboard')" class="neu-button px-4 py-2 rounded-xl text-[10px] font-bold active">DASHBOARD</button>
-            <button id="btn-adm" onclick="navigate('admin')" class="neu-button px-4 py-2 rounded-xl text-[10px] font-bold">ADMIN</button>
-        </div>
-    </nav>
-
-    <main class="max-w-4xl mx-auto p-4 lg:p-8">
-        
-        <!-- DASHBOARD PAGE -->
-        <section id="view-dashboard" class="space-y-6">
-            <!-- Exam Tabs -->
-            <div class="flex space-x-3 overflow-x-auto py-2 no-scrollbar">
-                <button onclick="setExam('BCS')" class="exam-tab neu-button px-6 py-3 rounded-2xl text-[10px] font-bold active" data-exam="BCS">BCS</button>
-                <button onclick="setExam('Bank')" class="exam-tab neu-button px-6 py-3 rounded-2xl text-[10px] font-bold" data-exam="Bank">BANK</button>
-                <button onclick="setExam('Primary')" class="exam-tab neu-button px-6 py-3 rounded-2xl text-[10px] font-bold" data-exam="Primary">PRIMARY</button>
-                <button onclick="setExam('NTRCA')" class="exam-tab neu-button px-6 py-3 rounded-2xl text-[10px] font-bold" data-exam="NTRCA">NTRCA</button>
-            </div>
-
-            <!-- Stats Grid -->
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                <div class="neu-flat p-6 rounded-[2rem] text-center">
-                    <h2 id="stat-percent" class="text-3xl font-black text-indigo-600">0%</h2>
-                    <p class="text-[9px] font-bold text-slate-400 uppercase mt-1">Completion</p>
+    <!-- App Container -->
+    <div id="app" class="min-h-screen flex flex-col md:flex-row hidden">
+        <!-- Sidebar Navigation -->
+        <aside id="sidebar" class="fixed md:relative inset-y-0 left-0 w-64 bg-white border-r border-slate-200 flex flex-col z-50 hidden-mobile md:translate-x-0">
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center">
+                <div>
+                    <h1 class="text-2xl font-bold text-blue-600 flex items-center gap-2">
+                        <i class="fas fa-graduation-cap"></i> StudyFlow
+                    </h1>
+                    <p class="text-[10px] text-slate-400 mt-1 uppercase tracking-widest font-bold">Vercel & Firebase Ready</p>
                 </div>
-                <div class="neu-flat p-6 rounded-[2rem] text-center">
-                    <h2 id="stat-count" class="text-3xl font-black text-slate-700">0/0</h2>
-                    <p class="text-[9px] font-bold text-slate-400 uppercase mt-1">Topics Finished</p>
-                </div>
-                <div class="neu-flat p-6 rounded-[2rem] text-center col-span-2 md:col-span-1 border-2 border-indigo-200/50">
-                    <h2 id="active-exam-label" class="text-2xl font-black text-slate-800 uppercase">BCS</h2>
-                    <p class="text-[9px] font-bold text-slate-400 uppercase mt-1">Current Goal</p>
-                </div>
+                <button onclick="toggleSidebar()" class="md:hidden text-slate-400">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
 
-            <!-- Syllabus Feed -->
-            <div id="syllabus-container" class="space-y-8 pt-4 pb-20">
-                <!-- Grouped Content will inject here -->
-            </div>
-        </section>
+            <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
+                <button onclick="switchView('dashboard'); closeSidebarOnMobile()" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 hover:bg-slate-50 transition-all sidebar-active" id="nav-dashboard">
+                    <i class="fas fa-th-large w-5"></i> Dashboard
+                </button>
+                <button onclick="switchView('syllabus'); closeSidebarOnMobile()" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 hover:bg-slate-50 transition-all" id="nav-syllabus">
+                    <i class="fas fa-book-open w-5"></i> Syllabus
+                </button>
+                <button onclick="switchView('challenges'); closeSidebarOnMobile()" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 hover:bg-slate-50 transition-all" id="nav-challenges">
+                    <i class="fas fa-fire w-5"></i> Challenges
+                </button>
+                <button onclick="switchView('analytics'); closeSidebarOnMobile()" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 hover:bg-slate-50 transition-all" id="nav-analytics">
+                    <i class="fas fa-chart-line w-5"></i> Analytics
+                </button>
+                
+                <div class="pt-8 pb-2 px-4 text-xs font-bold text-slate-400 uppercase tracking-widest">Administrator</div>
+                <button onclick="switchView('admin'); closeSidebarOnMobile()" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 hover:bg-slate-50 transition-all" id="nav-admin">
+                    <i class="fas fa-user-shield w-5"></i> Admin Panel
+                </button>
+            </nav>
 
-        <!-- ADMIN PAGE -->
-        <section id="view-admin" class="hidden space-y-6">
-            <div class="neu-flat p-6 rounded-[2.5rem]">
-                <h3 class="font-bold text-sm mb-4 flex items-center">
-                    <i class="fas fa-plus-circle mr-2 text-indigo-500"></i>
-                    Add Content for <span id="admin-exam-name" class="ml-1 text-indigo-600 underline">BCS</span>
-                </h3>
-                <div class="space-y-3">
-                    <input type="text" id="add-sub" placeholder="Subject (e.g. History)" class="neu-pressed w-full p-4 rounded-2xl outline-none text-sm font-semibold border-none">
-                    <input type="text" id="add-topic" placeholder="Topic Title" class="neu-pressed w-full p-4 rounded-2xl outline-none text-sm font-semibold border-none">
-                    <input type="text" id="add-book" placeholder="Reference Book (Optional)" class="neu-pressed w-full p-4 rounded-2xl outline-none text-sm font-semibold border-none">
-                    <button onclick="handleUpload()" class="neu-button w-full py-4 rounded-2xl font-bold text-indigo-600 flex items-center justify-center space-x-2">
-                        <i class="fas fa-cloud-upload-alt"></i>
-                        <span>PUBLISH TO CLOUD</span>
-                    </button>
+            <div class="p-4 border-t border-slate-100">
+                <div class="flex items-center gap-3 p-2 bg-slate-50 rounded-xl relative group">
+                    <div id="user-avatar" class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold uppercase text-xs shrink-0 overflow-hidden">
+                        <img id="user-photo" src="" class="hidden w-full h-full object-cover">
+                        <span id="user-initials">??</span>
+                    </div>
+                    <div class="flex-1 overflow-hidden">
+                        <p id="user-name" class="text-sm font-semibold truncate">Loading...</p>
+                        <button onclick="handleLogout()" class="text-[10px] text-red-500 font-bold uppercase hover:underline">Sign Out</button>
+                    </div>
                 </div>
             </div>
+        </aside>
 
-            <div class="neu-flat rounded-[2rem] overflow-hidden">
-                <table class="w-full text-left">
-                    <thead class="bg-slate-100/50 text-[10px] font-black uppercase text-slate-400">
-                        <tr>
-                            <th class="p-4">Topic Details</th>
-                            <th class="p-4 text-right">Manage</th>
-                        </tr>
-                    </thead>
-                    <tbody id="admin-list" class="divide-y divide-white/20 text-sm"></tbody>
-                </table>
-            </div>
-        </section>
-    </main>
+        <!-- Main Content Area -->
+        <main class="flex-1 flex flex-col min-w-0">
+            <header class="h-16 bg-white border-b border-slate-200 hidden md:flex items-center justify-between px-6 sticky top-0 z-30">
+                <div class="flex items-center gap-4">
+                    <label class="text-sm font-medium text-slate-500">Exam Focus:</label>
+                    <select id="exam-selector" onchange="changeExam(this.value)" class="bg-slate-100 border-none rounded-lg px-3 py-1.5 text-sm font-bold text-blue-600 outline-none">
+                        <option value="BCS">BCS Preliminary</option>
+                        <option value="BANK">Bank Job</option>
+                        <option value="NTRCA">NTRCA</option>
+                        <option value="PRIMARY">Primary Teacher</option>
+                        <option value="JOB11-20">Class 11-20 Job</option>
+                    </select>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span id="header-timer" class="hidden font-mono text-blue-600 bg-blue-50 px-3 py-1 rounded-full border border-blue-200">00:00:00</span>
+                    <div id="sync-indicator" class="flex items-center gap-2 px-3 py-1 bg-green-50 text-green-600 rounded-full text-xs font-bold">
+                        <span class="w-2 h-2 bg-green-500 rounded-full animate-ping"></span> Live
+                    </div>
+                </div>
+            </header>
 
-    <!-- Scripts -->
+            <div id="content-mount" class="p-4 md:p-6 overflow-y-auto h-full"></div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div id="modal-overlay" class="fixed inset-0 bg-black/50 hidden z-[60] flex items-center justify-center p-4">
+        <div id="modal-content" class="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden"></div>
+    </div>
+
+    <!-- Firebase SDKs -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, addDoc, deleteDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut, signInWithCustomToken, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot, updateDoc, collection, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyBY2sVcdpIydP4XjSBt1GHzhc2-mqJUtdE",
-            authDomain: "edutrack-pro-b771d.firebaseapp.com",
-            projectId: "edutrack-pro-b771d",
-            storageBucket: "edutrack-pro-b771d.firebasestorage.app",
-            messagingSenderId: "419740013368",
-            appId: "1:419740013368:web:6ccbb7aae529f33351a7cd"
-        };
+        // --- FIREBASE CONFIGURATION ---
+        // Firebase Console > Project Settings > General > Your Apps-এ গিয়ে নিচের তথ্যগুলো কপি করে বসান।
+        // যদি আপনি পরিবেশ থেকে সরাসরি কনফিগারেশন পান তবে তা অটোমেটিক সেট হবে।
+        let firebaseConfig;
+        try {
+            firebaseConfig = JSON.parse(__firebase_config);
+        } catch (e) {
+            // ম্যানুয়াল সেটিংসের জন্য নিচের কমেন্ট আউট করা অংশটি ব্যবহার করতে পারেন:
+          // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+          const firebaseConfig = {
+          apiKey: "AIzaSyBY2sVcdpIydP4XjSBt1GHzhc2-mqJUtdE",
+          authDomain: "edutrack-pro-b771d.firebaseapp.com",
+          projectId: "edutrack-pro-b771d",
+          storageBucket: "edutrack-pro-b771d.firebasestorage.app",
+          messagingSenderId: "419740013368",
+          appId: "1:419740013368:web:76c6a22b317cf7dc51a7cd",
+          measurementId: "G-67WZTDXL7R"
+            };
+            console.error("Firebase configuration missing. Please provide it in the code.");
+        }
 
+        // --- FIREBASE INITIALIZATION ---
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const APP_ID = "edutrack-pro-b771d";
+        const provider = new GoogleAuthProvider();
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'studyflow-default';
 
-        // Global State
-        window.state = {
-            user: null,
-            currentExam: 'BCS',
-            topics: [],
-            userProgress: {},
-            subscriptions: []
+        let user = null;
+        let currentExam = 'BCS';
+        let currentView = 'dashboard';
+        let activeTimer = null;
+        let timerSeconds = 0;
+        let timerTopic = null;
+
+        // Base Data
+        const BASE_SYLLABUS = {
+            'BCS': [{ id: 1, subject: 'English', chapter: 'Grammar', topic: 'Parts of Speech', estTime: 45 }],
+            'BANK': [{ id: 4, subject: 'Math', chapter: 'Numbers', topic: 'Divisibility', estTime: 120 }],
+            'NTRCA': [{ id: 100, subject: 'General Knowledge', chapter: 'Bangladesh', topic: 'Liberation War', estTime: 60 }],
+            'PRIMARY': [{ id: 200, subject: 'Mathematics', chapter: 'Arithmetic', topic: 'Unitary Method', estTime: 45 }],
+            'JOB11-20': [{ id: 300, subject: 'Computer', chapter: 'Hardware', topic: 'Input Devices', estTime: 30 }]
         };
 
-        // Initialize App
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                window.state.user = user;
-                document.getElementById('loader').style.display = 'none';
-                initSync();
+        let userData = {
+            syllabuses: JSON.parse(JSON.stringify(BASE_SYLLABUS)),
+            progress: {},
+            masteryCount: {},
+            challenges: { startDate: new Date().toISOString() }
+        };
+
+        // --- AUTH & DATA SYNC ---
+        const initAuth = async () => {
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                try {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } catch (e) {
+                    await signInAnonymously(auth);
+                }
             } else {
-                signInAnonymously(auth).catch(err => {
-                    alert("Sync Error: Please ensure domain is authorized in Firebase console.");
-                });
+                // By default for standard browser usage, we show the login UI
+            }
+        };
+        initAuth();
+
+        onAuthStateChanged(auth, (u) => {
+            if (u) {
+                user = u;
+                document.getElementById('auth-loading').classList.add('hidden');
+                document.getElementById('app').classList.remove('hidden');
+                updateUserUI(u);
+                setupUserDataSync(u.uid);
+            } else {
+                user = null;
+                document.getElementById('loading-spinner').classList.add('hidden');
+                document.getElementById('loading-text').classList.add('hidden');
+                document.getElementById('login-ui').classList.remove('hidden');
+                document.getElementById('app').classList.add('hidden');
+                document.getElementById('auth-loading').classList.remove('hidden');
             }
         });
 
-        function initSync() {
-            // Unsubscribe existing listeners
-            window.state.subscriptions.forEach(unsub => unsub());
-            window.state.subscriptions = [];
+        document.getElementById('google-login-btn').onclick = async () => {
+            try { await signInWithPopup(auth, provider); } 
+            catch (e) { console.error("Login failed", e); }
+        };
 
-            const ex = window.state.currentExam;
+        window.handleLogout = () => signOut(auth);
 
-            // 1. Sync Syllabus
-            const qSyllabus = query(collection(db, 'artifacts', APP_ID, 'public', 'data', `syllabus_${ex}`), orderBy('timestamp', 'desc'));
-            const unsubSyllabus = onSnapshot(qSyllabus, (snap) => {
-                window.state.topics = snap.docs.map(d => ({id: d.id, ...d.data()}));
-                render();
+        const setupUserDataSync = (uid) => {
+            const userDocRef = doc(db, 'artifacts', appId, 'users', uid, 'state', 'profile');
+            
+            onSnapshot(userDocRef, (snap) => {
+                if (snap.exists()) {
+                    const cloud = snap.data();
+                    userData.progress = cloud.progress || {};
+                    userData.masteryCount = cloud.masteryCount || {};
+                    
+                    userData.syllabuses = JSON.parse(JSON.stringify(BASE_SYLLABUS));
+                    if (cloud.customSyllabuses) {
+                        Object.keys(cloud.customSyllabuses).forEach(key => {
+                            if (!userData.syllabuses[key]) userData.syllabuses[key] = [];
+                            cloud.customSyllabuses[key].forEach(item => {
+                                if (!userData.syllabuses[key].find(b => b.id === item.id)) {
+                                    userData.syllabuses[key].push({...item, isCustom: true});
+                                }
+                            });
+                        });
+                    }
+                    renderView();
+                } else {
+                    setDoc(userDocRef, { 
+                        uid, 
+                        email: user.email || 'Anonymous',
+                        progress: {}, 
+                        masteryCount: {}, 
+                        customSyllabuses: {} 
+                    });
+                }
+            }, (error) => {
+                console.error("Firestore error", error);
+                document.getElementById('sync-indicator').innerHTML = `<span class="w-2 h-2 bg-red-500 rounded-full"></span> Offline`;
             });
-
-            // 2. Sync Progress
-            const unsubProgress = onSnapshot(doc(db, 'artifacts', APP_ID, 'users', window.state.user.uid, 'progress', ex), (snap) => {
-                window.state.userProgress = snap.exists() ? snap.data() : {};
-                render();
-            });
-
-            window.state.subscriptions.push(unsubSyllabus, unsubProgress);
-        }
-
-        // Actions
-        window.setExam = (exam) => {
-            window.state.currentExam = exam;
-            document.querySelectorAll('.exam-tab').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.exam === exam);
-            });
-            document.getElementById('admin-exam-name').innerText = exam;
-            document.getElementById('active-exam-label').innerText = exam;
-            initSync();
         };
 
-        window.navigate = (page) => {
-            document.getElementById('view-dashboard').classList.toggle('hidden', page !== 'dashboard');
-            document.getElementById('view-admin').classList.toggle('hidden', page !== 'admin');
-            document.getElementById('btn-dash').classList.toggle('active', page === 'dashboard');
-            document.getElementById('btn-adm').classList.toggle('active', page === 'admin');
-        };
-
-        window.handleUpload = async () => {
-            const sub = document.getElementById('add-sub').value.trim();
-            const topic = document.getElementById('add-topic').value.trim();
-            const book = document.getElementById('add-book').value.trim();
-
-            if (!sub || !topic) return;
-
-            try {
-                await addDoc(collection(db, 'artifacts', APP_ID, 'public', 'data', `syllabus_${window.state.currentExam}`), {
-                    subject: sub,
-                    topic: topic,
-                    book: book || "General Source",
-                    timestamp: Date.now()
-                });
-                document.getElementById('add-sub').value = '';
-                document.getElementById('add-topic').value = '';
-                document.getElementById('add-book').value = '';
-            } catch (e) { console.error(e); }
-        };
-
-        window.toggleProgress = async (id) => {
-            const current = window.state.userProgress[id]?.status || 'pending';
-            const next = current === 'completed' ? 'pending' : 'completed';
-
-            await setDoc(doc(db, 'artifacts', APP_ID, 'users', window.state.user.uid, 'progress', window.state.currentExam), {
-                [id]: { status: next, updatedAt: Date.now() }
-            }, { merge: true });
-        };
-
-        window.deleteTopic = async (id) => {
-            if (confirm("Permanently delete this topic?")) {
-                await deleteDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', `syllabus_${window.state.currentExam}`, id));
+        const pushToCloud = async (updates) => {
+            if (!user) return;
+            const ref = doc(db, 'artifacts', appId, 'users', user.uid, 'state', 'profile');
+            try { 
+                await updateDoc(ref, updates); 
+            } catch { 
+                await setDoc(ref, updates, { merge: true }); 
             }
         };
 
-        // UI Engine
-        function render() {
-            const topics = window.state.topics;
-            const progress = window.state.userProgress;
-            
-            // Dashboard Render
-            const container = document.getElementById('syllabus-container');
-            container.innerHTML = '';
+        // --- CORE UI LOGIC ---
+        window.switchView = (v) => {
+            currentView = v;
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('sidebar-active'));
+            document.getElementById(`nav-${v}`)?.classList.add('sidebar-active');
+            renderView();
+        };
 
-            const subjects = [...new Set(topics.map(t => t.subject))];
-            
-            subjects.forEach(sub => {
-                const subSection = document.createElement('div');
-                subSection.innerHTML = `<h3 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 ml-2">${sub}</h3>`;
-                
-                const subTopics = topics.filter(t => t.subject === sub);
-                subTopics.forEach(t => {
-                    const isDone = progress[t.id]?.status === 'completed';
-                    const card = document.createElement('div');
-                    card.className = `neu-flat p-4 rounded-2xl mb-4 flex items-center justify-between transition-all ${isDone ? 'opacity-60' : ''}`;
-                    card.innerHTML = `
-                        <div class="flex items-center space-x-4">
-                            <button onclick="toggleProgress('${t.id}')" class="w-10 h-10 rounded-full flex items-center justify-center transition-all ${isDone ? 'neu-pressed text-emerald-500' : 'neu-button text-slate-400'}">
-                                <i class="fas ${isDone ? 'fa-check-circle' : 'fa-circle text-[6px]'}"></i>
-                            </button>
-                            <div>
-                                <p class="font-bold text-sm ${isDone ? 'line-through text-slate-400' : 'text-slate-800'}">${t.topic}</p>
-                                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">${t.book}</p>
-                            </div>
+        window.changeExam = (val) => {
+            currentExam = val;
+            renderView();
+        };
+
+        function renderView() {
+            const mount = document.getElementById('content-mount');
+            mount.innerHTML = '';
+            switch(currentView) {
+                case 'dashboard': renderDashboard(mount); break;
+                case 'syllabus': renderSyllabus(mount); break;
+                case 'admin': renderAdmin(mount); break;
+                case 'challenges': renderChallenges(mount); break;
+                case 'analytics': renderAnalytics(mount); break;
+            }
+        }
+
+        function renderDashboard(container) {
+            const examData = userData.syllabuses[currentExam] || [];
+            const completed = examData.filter(t => userData.progress[currentExam]?.[t.id]?.status === 'Completed').length;
+            const pct = examData.length > 0 ? Math.round((completed/examData.length)*100) : 0;
+            const mastery = userData.masteryCount[currentExam] || 0;
+
+            container.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+                        <p class="text-xs font-bold text-slate-400 uppercase mb-2">${currentExam} Focus</p>
+                        <h3 class="text-3xl font-bold">${pct}% <span class="text-sm font-normal text-slate-400">Complete</span></h3>
+                        <div class="w-full bg-slate-100 h-2 mt-4 rounded-full overflow-hidden">
+                            <div class="bg-blue-600 h-full" style="width: ${pct}%"></div>
                         </div>
-                        ${isDone ? '<span class="status-badge bg-emerald-100 text-emerald-600">Done</span>' : ''}
-                    `;
-                    subSection.appendChild(card);
-                });
-                container.appendChild(subSection);
-            });
-
-            if (topics.length === 0) {
-                container.innerHTML = `<div class="text-center py-20 opacity-30"><i class="fas fa-folder-open text-4xl mb-2"></i><p class="text-xs font-bold uppercase">No topics found</p></div>`;
-            }
-
-            // Admin List Render
-            const adminList = document.getElementById('admin-list');
-            adminList.innerHTML = topics.map(t => `
-                <tr class="hover:bg-white/10">
-                    <td class="p-4">
-                        <p class="text-[9px] font-black text-indigo-500 uppercase">${t.subject}</p>
-                        <p class="font-bold text-slate-700">${t.topic}</p>
-                    </td>
-                    <td class="p-4 text-right">
-                        <button onclick="deleteTopic('${t.id}')" class="w-8 h-8 rounded-lg neu-button text-rose-500 text-xs">
-                            <i class="fas fa-trash-alt"></i>
-                        </button>
-                    </td>
-                </tr>
-            `).join('');
-
-            // Stats Update
-            const completedCount = topics.filter(t => progress[t.id]?.status === 'completed').length;
-            const totalCount = topics.length;
-            const percent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
-            
-            document.getElementById('stat-percent').innerText = percent + '%';
-            document.getElementById('stat-count').innerText = `${completedCount}/${totalCount}`;
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+                        <p class="text-xs font-bold text-slate-400 uppercase mb-2">Revision Rank</p>
+                        <h3 class="text-3xl font-bold text-orange-500">Lvl ${mastery}</h3>
+                        <p class="text-xs text-slate-400 mt-2">Times full syllabus reset</p>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-2xl border border-slate-100">
+                    <h4 class="font-bold mb-4">Recommended for You</h4>
+                    <div class="space-y-3">
+                        ${examData.slice(0, 3).map(t => `
+                            <div class="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
+                                <div><p class="font-bold text-sm">${t.topic}</p><p class="text-[10px] text-slate-400 uppercase">${t.chapter}</p></div>
+                                <button onclick="startTimer(${t.id}, '${t.topic}')" class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center"><i class="fas fa-play text-[10px]"></i></button>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
         }
+
+        function renderSyllabus(container) {
+            const topics = userData.syllabuses[currentExam] || [];
+            container.innerHTML = `
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold">${currentExam} Syllabus</h2>
+                    <button onclick="resetRevision()" class="text-xs font-bold text-blue-600 hover:underline">Reset Entire Syllabus</button>
+                </div>
+                <div class="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm">
+                    <table class="w-full text-left">
+                        <thead class="bg-slate-50 text-[10px] font-bold text-slate-400 uppercase">
+                            <tr><th class="p-4">Topic</th><th class="p-4">Status</th><th class="p-4 text-right">Actions</th></tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            ${topics.map(t => {
+                                const prog = userData.progress[currentExam]?.[t.id] || { status: 'Pending' };
+                                return `
+                                <tr class="hover:bg-slate-50">
+                                    <td class="p-4">
+                                        <div class="font-bold text-sm">${t.topic}</div>
+                                        <div class="text-[10px] text-slate-400">${t.chapter}</div>
+                                    </td>
+                                    <td class="p-4">
+                                        <span class="px-2 py-0.5 rounded text-[8px] font-bold uppercase ${prog.status === 'Completed' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-400'}">${prog.status}</span>
+                                    </td>
+                                    <td class="p-4 text-right">
+                                        <button onclick="startTimer(${t.id}, '${t.topic}')" class="text-blue-600 px-2"><i class="fas fa-clock"></i></button>
+                                        <button onclick="markComplete(${t.id})" class="text-green-600 px-2"><i class="fas fa-check"></i></button>
+                                    </td>
+                                </tr>`;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        function renderAdmin(container) {
+            container.innerHTML = `
+                <div class="max-w-xl mx-auto bg-white p-8 rounded-3xl border border-slate-100 shadow-xl">
+                    <h2 class="text-2xl font-bold mb-6">Global Syllabus Manager</h2>
+                    <form id="admin-form" class="space-y-4">
+                        <select id="adm-exam" class="w-full p-4 bg-slate-50 rounded-xl outline-none border border-transparent focus:border-blue-500">
+                            <option value="BCS">BCS Preliminary</option>
+                            <option value="BANK">Bank Job</option>
+                            <option value="NTRCA">NTRCA</option>
+                            <option value="PRIMARY">Primary Teacher</option>
+                            <option value="JOB11-20">Class 11-20 Grade</option>
+                        </select>
+                        <input id="adm-chapter" placeholder="Chapter Name" class="w-full p-4 bg-slate-50 rounded-xl outline-none" required>
+                        <input id="adm-topic" placeholder="Topic Title" class="w-full p-4 bg-slate-50 rounded-xl outline-none" required>
+                        <button type="submit" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold shadow-lg hover:bg-blue-700">Add Global Topic</button>
+                    </form>
+                </div>
+            `;
+            
+            document.getElementById('admin-form').onsubmit = async (e) => {
+                e.preventDefault();
+                const exam = document.getElementById('adm-exam').value;
+                const chap = document.getElementById('adm-chapter').value;
+                const top = document.getElementById('adm-topic').value;
+
+                const newTopic = { id: Date.now(), subject: 'Global', chapter: chap, topic: top };
+                const existing = userData.syllabuses[exam].filter(t => t.isCustom);
+                
+                await pushToCloud({ [`customSyllabuses.${exam}`]: [...existing, newTopic] });
+                e.target.reset();
+                alert("Topic synced to Cloud!");
+            };
+        }
+
+        window.startTimer = (id, title) => {
+            if(activeTimer) return;
+            timerSeconds = 0;
+            timerTopic = { id, title, exam: currentExam };
+            document.getElementById('header-timer').classList.remove('hidden');
+            activeTimer = setInterval(() => {
+                timerSeconds++;
+                document.getElementById('header-timer').textContent = formatTime(timerSeconds);
+            }, 1000);
+            showModal(`
+                <div class="p-8 text-center">
+                    <h3 class="text-xl font-bold mb-6">Studying: ${title}</h3>
+                    <button onclick="stopTimer()" class="w-full bg-red-600 text-white py-4 rounded-xl font-bold">End & Save</button>
+                </div>
+            `);
+        };
+
+        window.stopTimer = async () => {
+            clearInterval(activeTimer);
+            activeTimer = null;
+            const e = timerTopic.exam;
+            const tid = timerTopic.id;
+            const cur = userData.progress[e]?.[tid] || { time: 0, status: 'Partial' };
+            const nextP = { ...userData.progress };
+            if(!nextP[e]) nextP[e] = {};
+            nextP[e][tid] = { status: cur.status === 'Completed' ? 'Completed' : 'Partial', time: (cur.time || 0) + timerSeconds };
+            await pushToCloud({ progress: nextP });
+            document.getElementById('header-timer').classList.add('hidden');
+            closeModal();
+        };
+
+        window.markComplete = async (id) => {
+            const e = currentExam;
+            const nextP = { ...userData.progress };
+            if(!nextP[e]) nextP[e] = {};
+            nextP[e][id] = { status: 'Completed', time: nextP[e][id]?.time || 0 };
+            await pushToCloud({ progress: nextP });
+        };
+
+        window.resetRevision = async () => {
+            const e = currentExam;
+            const nextM = { ...userData.masteryCount, [e]: (userData.masteryCount[e] || 0) + 1 };
+            const nextP = { ...userData.progress };
+            if(nextP[e]) {
+                Object.keys(nextP[e]).forEach(k => nextP[e][k].status = 'Pending');
+            }
+            await pushToCloud({ progress: nextP, masteryCount: nextM });
+            alert(`Syllabus reset! Revision Lvl: ${nextM[e]}`);
+        };
+
+        function formatTime(s) { return `${Math.floor(s/3600).toString().padStart(2,'0')}:${Math.floor((s%3600)/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`; }
+        
+        function updateUserUI(u) {
+            document.getElementById('user-name').textContent = u.displayName || u.email || 'User';
+            document.getElementById('user-initials').textContent = (u.displayName || u.email || 'U').charAt(0).toUpperCase();
+            if(u.photoURL) {
+                const img = document.getElementById('user-photo');
+                img.src = u.photoURL;
+                img.classList.remove('hidden');
+                document.getElementById('user-initials').classList.add('hidden');
+            }
+        }
+
+        function showModal(h) { document.getElementById('modal-content').innerHTML = h; document.getElementById('modal-overlay').classList.remove('hidden'); }
+        window.closeModal = () => document.getElementById('modal-overlay').classList.add('hidden');
+        window.toggleSidebar = () => {
+            const s = document.getElementById('sidebar');
+            s.classList.toggle('hidden-mobile');
+            s.classList.toggle('visible-mobile');
+        };
+        window.closeSidebarOnMobile = () => { if (window.innerWidth < 768) toggleSidebar(); };
+
+        function renderChallenges(c) { c.innerHTML = '<div class="p-20 text-center text-slate-400"><i class="fas fa-fire text-4xl mb-4"></i><br>Challenge Board Synced. Stay tuned for live events!</div>'; }
+        function renderAnalytics(c) { c.innerHTML = '<div class="p-20 text-center text-slate-400"><i class="fas fa-chart-pie text-4xl mb-4"></i><br>Analytics calculating based on your cloud progress...</div>'; }
     </script>
 </body>
 </html>
-
